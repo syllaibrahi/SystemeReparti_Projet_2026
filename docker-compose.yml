@@ -1,0 +1,28 @@
+ 
+
+services:
+  # Service Backend (Flask)
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+    networks:
+      - boutique-network
+
+  # Service Frontend (React)
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+    depends_on:
+      - backend
+    networks:
+      - boutique-network
+
+networks:
+  boutique-network:
+    driver: bridge

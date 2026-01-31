@@ -44,6 +44,16 @@ def get_produits():
     ]
     return jsonify(produits)
 
+@app.route('/api/utilisateurs', methods=['GET'])
+def get_utilisateurs():
+    # Remplace par ton vrai modèle si le nom diffère (ex: User.query.all())
+    # Ici on simule une réponse pour valider la route
+    utilisateurs = [
+        {"id": 1, "nom": "Ibrahima", "role": "Admin"},
+        {"id": 2, "nom": "abdou", "role": "User"}
+    ]
+    return jsonify(utilisateurs), 200
+
 if __name__ == '__main__':
     # host='0.0.0.0' est crucial pour être accessible depuis Docker/Kubernetes [cite: 7, 8]
     app.run(host='0.0.0.0', port=5000, debug=True)
