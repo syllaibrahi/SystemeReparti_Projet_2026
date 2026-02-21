@@ -87,3 +87,52 @@ Pour récupérer les URLs d'accès sur l'EliteBook :
     Frontend : minikube service frontend-service --url
 
     API Backend : minikube service backend-service --url
+5. Automatisation avec Ansible
+
+L'infrastructure du projet est entièrement automatisée grâce à Ansible, permettant une configuration rapide, reproductible et sans erreur sur n'importe quel poste Linux (Infrastructure as Code).
+Objectifs de l'automatisation :
+
+    Vérification d'environnement : Contrôle automatique de la présence de Docker, Minikube et Kubectl sur l'HP EliteBook.
+
+    Gestion de la configuration : Installation automatique des dépendances système (Java, outils réseau).
+
+    Idempotence : Le playbook vérifie l'état actuel et n'applique les changements que si nécessaire.
+
+Configuration Ansible
+Élément	Description	Fichier	Statut
+Playbook	Logique de déploiement et d'installation	ansible/playbook.yml	Validé
+Inventaire	Cible le localhost pour une exécution locale	ansible/hosts.ini	Validé
+Vérification	Mode Simulation (--check)	Commande Ansible	Validé
+Commande d'exécution
+
+cd ansible/
+ansible-playbook -i hosts.ini playbook.yml --check -K
+
+6. Pipeline CI/CD avec Jenkins
+
+Le cycle de vie de l'application est géré par un pipeline d'Intégration et de Déploiement Continus (CI/CD) via Jenkins, assurant que chaque modification de code est testée et déployée automatiquement.
+Pipeline Stages (Cycle de vie) :
+
+    Checkout Code : Récupération de la dernière version du code depuis GitHub.
+
+    Build Images : Construction des images Docker pour le Frontend et le Backend.
+
+    Infrastructure Check : Validation de l'état du cluster Kubernetes.
+
+    Deploy to K8s : Mise à jour automatique des Pods avec les nouvelles images.
+
+    Validation : Vérification finale du statut "Running" des services.
+
+Configuration du Pipeline
+Composant	Détails	Fichier	Statut
+Pipeline Script	Définition des étapes (Declarative Pipeline)	Jenkinsfile	Prêt
+Automation	Déploiement automatique sur Minikube	Script Shell K8s	Prêt
+Visualisation	Jenkins Stage View	Interface Web	Validé
+Visualisation du déploiement final
+
+Une fois le pipeline terminé, l'état global du système peut être vérifié avec :
+
+  kubectl get all
+ Conclusion de l'Architecture
+
+L'ensemble de ces 6 étapes transforme le projet ELITE-MARKET d'une simple application locale en un système réparti professionnel, prêt pour l'échelle industrielle avec une gestion automatisée du code à la production.
