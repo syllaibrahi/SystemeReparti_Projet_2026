@@ -38,43 +38,52 @@ Routes de l'API (Mise à jour)
    docker compose up --build -d
 4. Orchestration avec Kubernetes (Minikube)
 
-Après la conteneurisation, le projet a été migré vers un cluster Kubernetes pour assurer la haute disponibilité et la scalabilité des microservices.
-Concepts Clés implémentés :
+Le projet a été migré vers un cluster Kubernetes pour garantir la haute disponibilité, la scalabilité et la persistance des données.
+ Concepts Clés implémentés :
+- Deployments : Gestion automatisée des répliques pour le Frontend, le Backend et la Base de données.
+ - Services : 
+     `NodePort` : Pour l'accès externe (Frontend & API).
+     `ClusterIP` : Pour la communication sécurisée interne vers la base de données.
+- Persistance (PVC) : Utilisation d'un PersistentVolumeClaim de 1Go pour garantir que les données de la base de données ne sont pas perdues lors d'un redémarrage des Pods.
 
-    - Deployments : Gestion automatisée des répliques des Pods.
 
-    - Services (NodePort) : Exposition réseau des microservices au sein du cluster.
 
-    - Local Registry Integration : Utilisation du démon Docker de Minikube pour la gestion des images.
+ Architecture du Cluster  
 
-Déploiement sur le Cluster
+| Microservice | Identifiants / Config | Objet Kubernetes | Statut |
+| :--- | :--- | :--- | :--- |
+| **Frontend** | Port 5173 | Deployment & Service |  Running |
+| **Backend** | Port 5000 | Deployment & Service |  Running |
+| **PostgreSQL** | DB: `ibrahima_db` / User: `ibrahima` | Deployment & Service |  Running |
+| **Stockage** | `postgres-pvc` (1Gi) | PersistentVolumeClaim |  Bound |
 
-    Démarrer le cluster :
+ Commandes de Déploiement
+
+1. **Initialisation de l'environnement :**
+   ```bash
+   minikube start
+   eval $(minikube docker-env)
+
+    Déploiement de la base de données (Persistance incluse) :
     Bash
 
-    minikube start
+    kubectl apply -f k8s/db-deployment.yaml
 
-    Configurer l'environnement Docker :
-    Bash
-
-    eval $(minikube docker-env)
-
-    Build des images pour le cluster :
-    Bash
-
-    docker build -t systemereparti_projet_backend:latest ./backend
-    docker build -t systemereparti_projet_frontend:latest ./frontend
-
-    Appliquer les manifests YAML :
+    Déploiement de l'application (Backend & Frontend) :
     Bash
 
     kubectl apply -f k8s/backend-deployment.yaml
     kubectl apply -f k8s/frontend-deployment.yaml
 
-Accès aux Services
+    Vérification de l'état du système :
+    Bash
 
-Pour récupérer les URLs d'accès générées par Minikube :
+    kubectl get pods,pvc,svc
 
-    Accès Frontend : minikube service frontend-service --url
+🔗 Accès à l'application
 
-    Accès Backend : minikube service backend-service --url
+Pour récupérer les URLs d'accès sur l'EliteBook :
+
+    Frontend : minikube service frontend-service --url
+
+    API Backend : minikube service backend-service --url

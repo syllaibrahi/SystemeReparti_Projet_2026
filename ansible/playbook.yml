@@ -1,0 +1,68 @@
+---
+- name: "PARTIE 5 : AUTOMATISATION DE L'INFRASTRUCTURE - IBRAHIMA"
+  hosts: localhost
+  become: yes
+
+  tasks:
+    # --- SECTION DOCKER ---
+    - name: "1. Docker : S'assurer que le service tourne"
+      service:
+        name: docker
+        state: started
+      ignore_errors: yes
+
+    # --- SECTION KUBERNETES ---
+    - name: "2. Kubernetes : Vérifier la présence de Minikube et Kubectl"
+      stat:
+        path: "/usr/local/bin/{{ item }}"
+      loop: [ 'minikube', 'kubectl' ]
+      register: tools_check
+
+    - name: "3. Kubernetes : Alerte si un outil manque"
+      debug:
+        msg: "L'outil {{ item.item }} est bien présent sur l'EliteBook."
+      when: item.stat.exists
+      loop: "{{ tools_check.results }}"
+
+    # --- SECTION JENKINS (CORRIGÉE) ---
+    - name: "4.1 Jenkins : Installation de Java (Prérequis)"
+      apt:
+        name: openjdk-17-jre
+        state: present
+        update_cache: yes
+
+    - name: "4.2 Jenkins : Téléchargement de la clé GPG officielle"
+      get_url:
+        url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+        dest: /usr/share/keyrings/jenkins-keyring.asc
+        mode: '0644'
+
+    - name: "4.3 Jenkins : Ajout du dépôt officiel au système"
+      apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/"
+        state: present
+        filename: jenkins
+
+    - name: "4.4 Jenkins : Vérification des outils de téléchargement"
+      apt:
+        name: curl
+        state: present
+
+    # --- SECTION DÉPLOIEMENT ---
+    - name: "5. DÉPLOIEMENT : Lancement du cluster et des manifests"
+      become: no
+      shell: |
+        minikube start --driver=docker
+        kubectl apply -f ../k8s/db-deployment.yaml
+        kubectl apply -f ../k8s/backend-deployment.yaml
+        kubectl apply -f ../k8s/frontend-deployment.yaml
+      register: kube_output
+
+    - name: "6. RÉSULTAT : Affichage des Pods"
+      become: no
+      command: kubectl get pods
+      register: final_pods
+
+    - name: "Tableau de bord de l'application"
+      debug:
+        var: final_pods.stdout_lines

@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: systemereparti_projet_frontend:latest
+        # CORRECTION ICI : Remplace _ par - pour correspondre à ton build
+        image: systemereparti-frontend:latest 
         imagePullPolicy: Never
         ports:
         - containerPort: 5173
@@ -28,6 +29,6 @@ spec:
     app: frontend
   ports:
     - protocol: TCP
-      port: 5173
-      targetPort: 5173
+      port: 80           # Port standard pour le web
+      targetPort: 5173   # Le port de ton application Vite/React
   type: NodePort
